@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: digital-twin-backend
+    environment:
+      - APP_ENV=production
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/digital_twin
+      - SIMULATION_FREQUENCY=10
+      - WEBSOCKET_UPDATE_RATE=5
+      - MAX_SPEED=5000
+      - MAX_TEMPERATURE=120
+      - MAX_CURRENT=50
+      - MAX_VIBRATION=10
+      - MOTOR_ID=MOTOR-001
+      - ANOMALY_DETECTION_ENABLED=true
+      - ML_ANOMALY_DETECTION_ENABLED=true
+      - PREDICTION_ENABLED=true
+      - LIVE_HISTORY_POINTS=1000
+      - DATABASE_RETENTION_DAYS=30
+      - LOG_LEVEL=INFO
+      - CORS_ORIGINS=http://localhost,http://localhost:80
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - backend_models:/app/models
+      - backend_data:/app/data
+    depends_on:
+      - db
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: digital-twin-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  db:
+    image: postgres:15-alpine
+    container_name: digital-twin-db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=digital_twin
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+  backend_models:
+  backend_data:
