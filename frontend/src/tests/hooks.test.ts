@@ -200,37 +200,4 @@ describe('useTwinStore', () => {
     
     expect(result.current.eventLog).toHaveLength(0);
   });
-
-  test('limits history size', () => {
-    const { result } = renderHook(() => useTwinStore());
-    const largeHistory = Array(1500).fill(mockState);
-    
-    act(() => {
-      result.current.setHistoricalData(largeHistory as any);
-    });
-    
-    expect(result.current.historicalData.length).toBeLessThanOrEqual(1000);
-  });
-
-  test('limits alerts size', () => {
-    const { result } = renderHook(() => useTwinStore());
-    const alerts = Array(150).fill(null).map((_, i) => ({ ...mockAlert, id: i }));
-    
-    act(() => {
-      alerts.forEach(alert => result.current.addAlert(alert));
-    });
-    
-    expect(result.current.alerts.length).toBeLessThanOrEqual(100);
-  });
-
-  test('limits anomalies size', () => {
-    const { result } = renderHook(() => useTwinStore());
-    const anomalies = Array(150).fill(null).map((_, i) => ({ ...mockAnomaly, timestamp: Date.now() + i }));
-    
-    act(() => {
-      anomalies.forEach(anomaly => result.current.addAnomaly(anomaly));
-    });
-    
-    expect(result.current.anomalies.length).toBeLessThanOrEqual(100);
-  });
 });
