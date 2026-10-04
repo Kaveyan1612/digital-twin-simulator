@@ -18,7 +18,6 @@ export const Analytics: React.FC = () => {
   ];
 
   const fetchData = async () => {
-    setLoading(true);
     try {
       const [history, stats] = await Promise.all([
         getHistory(timeRange, 5000),
@@ -28,8 +27,6 @@ export const Analytics: React.FC = () => {
       setStatistics(stats);
     } catch (e) {
       console.error('Failed to fetch analytics:', e);
-    } finally {
-      setLoading(false);
     }
   };
 
